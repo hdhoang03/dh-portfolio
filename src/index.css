@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-bg: #f7f5f2;
+    --color-surface: #ffffff;
+    --color-surface-2: #f1ede8;
+    --color-accent: #5b4fcf;
+    --color-accent-light: #ede9fe;
+    --color-text: #1a1523;
+    --color-text-2: #4a4458;
+    --color-muted: #8b849c;
+    --color-border: #e4dff8;
+    --color-success: #16a34a;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c4b8f5;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: #ddd6fe;
+    color: #3730a3;
+  }
+}
+
+@layer utilities {
+  .gradient-text {
+    background: linear-gradient(135deg, #5b4fcf, #7c3aed, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 1.25rem;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.75rem;
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .section-padding {
+    padding: 4rem 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .section-padding {
+      padding: 5rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .section-padding {
+      padding: 7rem 3rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .section-padding {
+      padding: 8rem 0;
+    }
+  }
+
+  /* Disable hover transform on touch screens */
+  @media (hover: hover) {
+    .card:hover {
+      box-shadow: 0 8px 32px rgba(91, 79, 207, 0.12);
+      transform: translateY(-3px);
+    }
+  }
+
+  .divider {
+    width: 3rem;
+    height: 3px;
+    background: linear-gradient(90deg, #5b4fcf, #a855f7);
+    border-radius: 2px;
+    margin: 1rem 0 0;
+  }
+}
