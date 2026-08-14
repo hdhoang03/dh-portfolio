@@ -10,6 +10,7 @@ export const personalInfo = {
   phone: '0377 694 735',
   github: 'https://github.com/hdhoang03',
   linkedin: 'https://linkedin.com/in/dhoang03',
+  cv: 'https://drive.google.com/file/d/1SEFuPOeQgVb1SMYGCg2yvDTpHmBJerfb/view?usp=drive_link',
   // Replace with your Cloudinary avatar URL after uploading
   avatar: 'https://res.cloudinary.com/demo/image/upload/v1/samples/people/smiling-man.jpg',
   location: 'Ho Chi Minh City, Vietnam',
