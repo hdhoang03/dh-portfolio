@@ -116,6 +116,22 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    title: 'ShortURL',
+    subtitle: 'Vercel-Style URL Shortener & Analytics',
+    period: 'Aug 2026',
+    type: 'Full-stack',
+    description: 'Designed and built a minimalist, high-performance URL shortening and analytics platform. Features a "developer-grade" Vercel/Linear-inspired UI, low-latency redirection cached in Redis, dynamic QR code generation, and deep click analytics (browser, OS, device, referrer).',
+    highlights: [
+      'High-Performance Redirects: Base62 slug generation with a low-latency Redis caching layer to handle high-traffic redirects and offload database queries.',
+      'Deep Analytics Integration: Real-time tracking of visitor stats, generating visual insight timelines categorized by referrer, device class, operating system, and browser.',
+      'Developer-Grade UX: Clean dark-mode interface featuring dynamic Google S2 domain favicon extraction, instant clipboard actions, and mobile-first card list layouts.',
+    ],
+    tech: ['Java', 'Spring Boot', 'React', 'TypeScript', 'Redis', 'MySQL', 'Tailwind CSS', 'Docker', 'Vite', 'Swagger'],
+    github: 'https://github.com/hdhoang03/shorturl-fe',
+    image: 'https://res.cloudinary.com/dfsoeiui1/image/upload/v1788149435/Screenshot_2026-08-31_110916_hue77q.png',
+    featured: true,
+  },
+  {
     title: 'Springtunes',
     subtitle: 'Full-Stack Music Streaming Platform',
     period: 'Oct 2025 – Mar 2026',
