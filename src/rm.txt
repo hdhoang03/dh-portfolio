@@ -1,235 +1,186 @@
-# ShortURL
+# Spotify Clone Backend
 
-A minimalist URL shortening application built with a React frontend and a Spring Boot backend. The system generates short links using Base62 encoding, caches redirect lookups in Redis, and records per-click analytics (device, OS, browser, referrer).
+A high-performance RESTful API backend for a Spotify clone application built with **Java 21** and **Spring Boot 3.4.6**. The system delivers scalable music streaming, robust authentication with HttpOnly cookie handling, IP-based rate limiting, real-time Server-Sent Events (SSE), event-driven background processing, and distributed caching.
 
 ---
 
-## UI/UX Upgrades (Vercel/Linear Style)
+## System Architecture
 
-The frontend features a "developer-grade" aesthetic, utilizing design guidelines inspired by **Vercel** and **Linear** while strictly avoiding overly rounded corners, heavy drop shadows, or generic icon sets.
+The backend follows an event-driven architecture designed to decouple heavy workloads from synchronous HTTP worker threads while guaranteeing high security and fast responses.
 
-### Key Visual & UX Improvements:
-1. **Design System & Typography**:
-   - Uses `JetBrains Mono` for tech-centric strings (e.g. short codes, shortened URLs, click counts) for optimal readability.
-   - Adopts a strict `4px - 6px` border-radius constraint.
-   - Leverages a custom multi-layered shadow token (`shadow-card`) to give pages depth.
-2. **Dark Mode Integration**:
-   - Class-based theme switcher (`html.dark`) with automatic local storage persistence.
-3. **Interactive & Contextual Polish**:
-   - **Quick Clipboard Paste**: Interactive clipboard API `Paste` button next to the long URL input.
-   - **Copy Button Micro-feedback**: Transitions smoothly on click with a green `"Copied ✓"` confirmation label.
-   - **Warning Badges**: Dynamic warning label (amber) highlights links expiring in the next 7 days.
-   - **Dynamic Favicons**: Extracts root domains and fetches real-time favicons using the Google S2 API.
-4. **Enhanced Navigation & Layout Density**:
-   - **Integrated Metrics Dashboard**: Displays inline summary statistics (`Total` / `Active` / `Expired`) dynamically computed on the client.
-   - **Client-Side Live Filtering**: Filter tabs (`All`, `Active`, `Expired`) and responsive instant search input powered by the `useUrlFilter` hook.
-5. **Mobile-First Responsive Layout**:
-   - For screens smaller than `640px` (`sm`), the massive 5-column table collapses automatically into a clean **mobile card list** view.
-   - Optimized padding and margins prevent layout density issues on small screens.
+```mermaid
+graph TD
+    Client[Client Application] -->|HTTP REST + HttpOnly Cookies| API[Spring Boot API Server]
+    Client -->|SSE Stream| SSE[SSE Controller]
+    
+    API -->|Rate Limit Verification| RateLimiter[Bucket4j Rate Limiter]
+    API -->|Authentication Filter| CookieFilter[CookieTokenFilter]
+    
+    API -->|Read / Write| DB[(MySQL Database)]
+    API -->|Cache Management| Redis[(Redis Cache)]
+    API -->|Publish Events| RabbitMQ{RabbitMQ Broker}
+    
+    RabbitMQ -->|Play Count Event| Consumer[RabbitMQ Consumer]
+    RabbitMQ -->|Notification Event| Consumer
+    
+    Consumer -->|Update Stream Counts| DB
+    Consumer -->|Send Email| Brevo[Brevo REST API]
+    Consumer -->|Push Live Alert| SSE
+    
+    API -->|Media Hosting| Cloudinary[Cloudinary CDN]
+    API -->|Payment Links| PayOS[PayOS Gateway]
+```
+
+---
+
+## Core Features
+
+### 1. Identity, Security & HttpOnly Cookie Authentication
+- **HttpOnly Cookie Session Management**: Issues JWT access tokens encapsulated within `HttpOnly`, `Secure`, `SameSite=None` cookies (`access_token`). This completely isolates tokens from browser JavaScript context, mitigating Cross-Site Scripting (XSS) risks.
+- **Transparent Filter Pipeline (`CookieTokenFilter`)**: Intercepts incoming requests, extracts the JWT from `access_token` cookies, and wraps the request header with `Authorization: Bearer <token>`. This reuses Spring Security's native OAuth2 Resource Server validation pipeline.
+- **Public Endpoint Bypass**: Automatically skips cookie injection on public routes (such as public song/album endpoints and auth endpoints). This prevents expired cookies from triggering false `401 Unauthorized` responses on public resources.
+- **Token Invalidation & Cookie Revocation**: Supports explicit token blacklisting on logout while simultaneously clearing client-side cookies using `Max-Age=0` HTTP headers.
+- **Social Login & Protection**: Google OAuth2 authentication flow with automatic cookie issuance, complemented by Google reCAPTCHA v3 verification during account registration.
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions enforced across `Guest`, `User`, `Artist`, and `Admin` roles.
+
+### 2. Rate Limiting & Threat Protection
+- **Token Bucket Algorithm (Bucket4j)**: Integrated `RateLimitService` enforces rate limits using in-memory token buckets (`bucket4j-core`).
+- **Endpoint Protection**: Guards sensitive endpoints (such as `/auth/token`) against brute-force attacks and credential stuffing by capping requests at 10 requests per minute per IP address.
+- **Reverse Proxy IP Resolution**: Resolves client IP addresses across proxies using `X-Forwarded-For` header analysis.
+- **Automated Bucket Eviction**: Scheduled background tasks (`@Scheduled`) periodically prune inactive IP buckets every 10 minutes to eliminate memory leak vectors.
+- **Standardized Rate Limit Exceptions**: Exceeding rate quotas immediately returns HTTP 429 (`TOO_MANY_REQUESTS`).
+
+### 3. Music Catalog & Social Media
+- **Catalog Management**: CRUD operations for Songs, Albums, Artists, Playlists, Categories, and Sync Lyrics.
+- **Search Capabilities**: Global multi-entity search and scoped intra-playlist filtering.
+- **Social Interactions**: User like/unlike tracking, user/artist following, public/private profile controls, and user blocklist management.
+- **Cloud Media Delivery**: Audio files and cover images stored and served via Cloudinary CDN.
+
+### 4. Event-Driven Messaging (RabbitMQ)
+Asynchronous task delegation powered by RabbitMQ (`spring-boot-starter-amqp`) decouples computational tasks from synchronous request cycles:
+- **Play Count Aggregation**: Asynchronous processing via `play_count_queue` to prevent database locks under high concurrent streams.
+- **Notification Queue**: Routing system events to `notification_queue` for processing.
+- **Real-Time SSE Routing**: Instant user events pushed through `sse_queue` directly to target client streams.
+
+### 5. Advanced Caching (Redis)
+Custom Redis configuration engineered for high performance:
+- **Targeted TTL Policies**: 10-minute TTL for administrative dashboard summaries; 5-minute TTL for artist profiles, album views, and public catalog listings.
+- **Polymorphic Deserialization**: Configured Jackson `ObjectMapper` with polymorphic typing (`DefaultTyping.NON_FINAL`) to handle generic paginated responses and complex JPA entities without type erasure errors.
+
+### 6. Server-Sent Events (SSE)
+Real-time push notifications delivered over HTTP via `SseEmitter`. Authenticated subscribers connect to `/sse/subscribe` to receive real-time alerts without short or long polling overhead.
+
+### 7. Subscriptions & Payment Integration
+PayOS payment gateway integration for managing Premium subscription plans:
+- Secure payment link generation and signature verification for webhooks.
+- Automated daily background scheduler (`PremiumScheduler`) to revoke expired subscription privileges.
+
+### 8. Transactional Email Services
+Integration with Brevo (formerly Sendinblue) Transactional REST API for OTP verification and password reset emails, bypassing outbound SMTP port blocking restrictions in cloud environments.
+
+---
+
+## Tech Stack
+
+| Domain | Technology |
+| :--- | :--- |
+| **Language & Framework** | Java 21, Spring Boot 3.4.6 |
+| **Security & Auth** | Spring Security, OAuth2 Resource Server, JWT, HttpOnly Cookies, Google reCAPTCHA v3 |
+| **Rate Limiting** | Bucket4j 8.10.1 |
+| **Database & Persistence** | MySQL 8.x, Hibernate, Spring Data JPA |
+| **Caching** | Redis (Lettuce Client, Jackson Polymorphic Typing) |
+| **Message Broker** | RabbitMQ (Spring AMQP) |
+| **Storage & CDN** | Cloudinary |
+| **Payment Gateway** | PayOS SDK |
+| **Email Service** | Brevo Transactional REST API |
+| **Object Mapping** | MapStruct 1.5.5 |
 
 ---
 
 ## Project Structure
 
-This repository is the **frontend** client. The backend lives in a separate repository.
-
+```text
+src/main/java/com/spotify/spotify
+├── configuration   # Security, CookieTokenFilter, Cache, RabbitMQ, Cloudinary, RestTemplate
+├── controller      # REST API Controllers (Auth, Music, Playlists, SSE, Payment, etc.)
+├── dto             # Data Transfer Objects & Event Payload Schemas
+├── entity          # JPA Entities (User, Role, Song, Album, Playlist, Like, Stream, Notification)
+├── exception       # Global Exception Handling (@ControllerAdvice, ErrorCodes)
+├── kafka           # [Legacy] Deactivated Kafka configuration
+├── mapper          # MapStruct Converters (UserMapper, SongMapper, AlbumMapper)
+├── rabbitmq        # Active RabbitMQ Event Consumers and Handlers
+├── repository      # Spring Data JPA Repositories
+└── service         # Core Business Services (Auth, RateLimit, Email, Music, Payment, SSE)
 ```
-shorturl-fe/       React + TypeScript + Tailwind CSS (this repo)
-shorturl/          Spring Boot REST API (backend repo)
-```
-
----
-
-## Technology Stack
-
-### Frontend
-
-| Technology | Version | Purpose |
-|---|---|---|
-| React | 18.3 | UI library & state management |
-| TypeScript | 5.4 | Compile-time type safety |
-| Vite | 5.3 | Build tool and fast refresh dev server |
-| Tailwind CSS | 3.4 | Utility-first responsive styling |
-| Axios | 1.7 | REST API client |
-
-### Backend
-
-| Technology | Version | Purpose |
-|---|---|---|
-| Spring Boot | 4.1 | Application framework |
-| Spring Security | - | CORS policies & endpoint whitelisting |
-| Spring Data JPA | - | Object-relational mapping (MySQL) |
-| Spring Data Redis | - | Caching layer integrations |
-| MySQL | 8.0 | Persistent database |
-| Redis | 7 | Caching short code redirects |
-| ZXing | 3.5.3 | QR code encoding |
-| MapStruct | 1.5.5 | Controller to Entity mapper |
-| Springdoc OpenAPI | 2.5.0 | Interactive API specification (Swagger UI) |
-| Lombok | - | Boilerplate reductions |
-| Java | 21 | Development platform |
-
----
-
-## Features
-
-- **Base62 URL Shortener**: Instantly shorten URLs into highly compressed slugs.
-- **Custom Expiry Limits**: Choose custom lifespan parameters (1, 7, 30, 90 days, or no expiry).
-- **Responsive QR Codes**: Display QR codes dynamically with clean, toggleable slide animation.
-- **Low-Latency Redirection**: Redis cache warmups handle immediate traffic with minimal database overhead.
-- **Deep Analytics Integration**: Tracks visitor click timelines, referrer sources, device classes, operating systems, and browsers.
-- **Local Storage Batch Fetching**: Retains a secure history cache client-side to retrieve user links across sessions.
-- **Inline Editing & Control**: Modify redirect targets, adjust validation statuses, or delete links instantly.
-
----
-
-## Prerequisites
-
-Before running the project locally, ensure the following are installed:
-
-- Node.js 20 or later
-- Java 21
-- Maven 3.9 or later
-- Docker & Docker Compose (for database/cache virtualization)
 
 ---
 
 ## Getting Started
 
-### 1. Start Infrastructure (MySQL and Redis)
+### Prerequisites
+- **Java 21** or higher
+- **Maven 3.8+**
+- **Docker & Docker Compose**
 
-From the backend project root:
-
+### Step 1: Launch Infrastructure Services
+Start the required local services (MySQL, Redis, RabbitMQ) using Docker Compose:
 ```bash
-docker compose up -d
+docker-compose up -d
+```
+Service ports:
+- **MySQL**: `3306` (Database: `spotify`)
+- **Redis**: `6379`
+- **RabbitMQ**: `5672` (AMQP Broker), `15672` (Management Dashboard)
+
+### Step 2: Environment Configuration
+Create a `.env` file in the project root directory (alongside `pom.xml`):
+```env
+# Database Configuration
+DB_NAME=spotify
+DB_USERNAME=root
+DB_PASSWORD=root
+
+# RabbitMQ Credentials
+RABBITMQ_USERNAME=guest
+RABBITMQ_PASSWORD=guest
+
+# Brevo HTTP Email Service
+BREVO_API_KEY=your_brevo_api_key
+MAIL_FROM=your_sender_email@domain.com
+
+# Cloudinary Storage
+KEY_CLOUD=your_cloudinary_api_key
+SECRET_CLOUD=your_cloudinary_api_secret
+
+# PayOS Payment Gateway
+PAYOS_CLIENT_ID=your_payos_client_id
+PAYOS_API_KEY=your_payos_api_key
+PAYOS_CHECKSUM_KEY=your_payos_checksum_key
+
+# Google OAuth2 & reCAPTCHA v3
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
+FRONTEND_PROD_URL=http://localhost:5173/oauth2/callback
 ```
 
-This starts:
-- MySQL 8.0 on port `3306` with database `shorturl_db`
-- Redis 7 on port `6379`
-
-### 2. Run the Backend
-
+### Step 3: Build and Run
+Compile and run the Spring Boot application using Maven Wrapper:
 ```bash
-cd shorturl
+# Package application
+./mvnw clean package -DskipTests
+
+# Start server
 ./mvnw spring-boot:run
 ```
-
-The API server starts on `http://localhost:8080`.
-Swagger UI is available at: `http://localhost:8080/swagger-ui.html`
-
-### 3. Run the Frontend
-
-```bash
-cd shorturl-fe
-npm install
-npm run dev
-```
-
-The frontend starts on `http://localhost:3000` (or configured fallback port).
+The server will run at: `http://localhost:8080/spotify`.
 
 ---
 
-## Backend Configuration
+## Production Deployment
 
-The main configuration file is located at `src/main/resources/application.yaml`.
+For production environments, activate the `prod` profile by setting the environment variable `SPRING_PROFILES_ACTIVE=prod`. This activates `application-prod.yaml` configured for:
+- Managed MySQL (e.g., Aiven)
+- Managed Redis with TLS/SSL (e.g., Upstash)
+- Cloud RabbitMQ (e.g., CloudAMQP)
 
-```yaml
-server:
-  port: 8080
-
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/shorturl_db
-    username: root
-    password: root
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-app:
-  base-url: http://localhost:8080/
-```
-
-Modify `app.base-url` to match your deployment domain when running in production.
-
----
-
-## API Reference
-
-Base path: `/api/v1/urls`
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/urls/shorten` | Create a new short URL |
-| GET | `/api/v1/urls/{shortCode}` | Get metadata for a short link |
-| POST | `/api/v1/urls/batch` | Get metadata for multiple short codes |
-| PUT | `/api/v1/urls/{shortCode}` | Update a short link |
-| DELETE | `/api/v1/urls/{shortCode}` | Delete a short link |
-| GET | `/api/v1/urls/{shortCode}/analytics` | Get click analytics |
-| GET | `/{shortCode}` | Redirect to the original URL |
-
-All responses follow a consistent `ApiResponse<T>` envelope:
-
-```json
-{
-  "status": 200,
-  "message": "Success",
-  "data": { }
-}
-```
-
----
-
-## Frontend Structure
-
-```
-src/
-  api/           Axios client and API service wrappers
-  components/
-    analytics/   Click analytics charts, graphs, and statistic grids
-    common/      Reusable UI atoms (Button, Input, Badge, CopyButton, Modal)
-    layout/      Header, footer, and shell elements (Layout, Dark Mode hook)
-    url/         Result display cards, URL lists, row items, and metrics
-  hooks/         Custom React state helpers (useUrls, useUrlFilter, useAnalytics)
-  pages/         Application route containers (HomePage)
-  types/         TypeScript domain models and responses
-  utils/         Date validators, domain extractors, and formatting helpers
-```
-
----
-
-## CORS Whitelist
-
-The backend allows requests from the following origins by default:
-- `http://localhost:3000`
-- `http://localhost:3001`
-- `http://localhost:5173`
-
-To add additional origins, update `SecurityConfig.java`.
-
----
-
-## Build for Production
-
-### Frontend
-
-```bash
-npm run build
-```
-
-Output is written to the `dist/` directory.
-
-### Backend
-
-```bash
-./mvnw clean package -DskipTests
-java -jar target/shorturl-0.0.1-SNAPSHOT.jar
-```
-
----
-
-## License
-
-This project is for personal and educational use.

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@400;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -6,12 +7,27 @@
     --color-surface: #ffffff;
     --color-surface-2: #f1ede8;
     --color-accent: #5b4fcf;
+    --color-accent-2: #7c3aed;
     --color-accent-light: #ede9fe;
     --color-text: #1a1523;
     --color-text-2: #4a4458;
     --color-muted: #8b849c;
     --color-border: #e4dff8;
     --color-success: #16a34a;
+  }
+
+  [data-theme="dark"] {
+    --color-bg: #0d0b14;
+    --color-surface: #13111f;
+    --color-surface-2: #1a1729;
+    --color-accent: #8b7fff;
+    --color-accent-2: #a78bfa;
+    --color-accent-light: #1e1a35;
+    --color-text: #f0eeff;
+    --color-text-2: #b3aed4;
+    --color-muted: #6e6a8a;
+    --color-border: #2a2545;
+    --color-success: #22c55e;
   }
 
   * {
@@ -27,9 +43,10 @@
   body {
     background-color: var(--color-bg);
     color: var(--color-text);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     line-height: 1.7;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   ::-webkit-scrollbar {
@@ -41,13 +58,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #c4b8f5;
+    background: #8b7fff;
     border-radius: 4px;
   }
 
   ::selection {
-    background: #ddd6fe;
-    color: #3730a3;
+    background: #5b4fcf40;
+    color: var(--color-accent);
   }
 }
 
@@ -59,11 +76,22 @@
     background-clip: text;
   }
 
+  [data-theme="dark"] .gradient-text {
+    background: linear-gradient(135deg, #a78bfa, #c084fc, #e879f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 1.25rem;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  }
+
+  [data-theme="dark"] .card {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
   }
 
   .tag {
@@ -100,11 +128,16 @@
     }
   }
 
-  /* Disable hover transform on touch screens */
+  /* Hover effects only on non-touch */
   @media (hover: hover) {
     .card:hover {
-      box-shadow: 0 8px 32px rgba(91, 79, 207, 0.12);
+      box-shadow: 0 8px 32px rgba(91, 79, 207, 0.15);
       transform: translateY(-3px);
+      border-color: var(--color-accent);
+    }
+
+    [data-theme="dark"] .card:hover {
+      box-shadow: 0 8px 40px rgba(139, 127, 255, 0.2);
     }
   }
 
@@ -114,5 +147,27 @@
     background: linear-gradient(90deg, #5b4fcf, #a855f7);
     border-radius: 2px;
     margin: 1rem 0 0;
+  }
+
+  /* Dark mode toggle button */
+  .theme-toggle {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--color-muted);
+  }
+
+  .theme-toggle:hover {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    transform: scale(1.1);
   }
 }

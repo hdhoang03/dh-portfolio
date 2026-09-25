@@ -10,7 +10,7 @@ export const personalInfo = {
   phone: '0377 694 735',
   github: 'https://github.com/hdhoang03',
   linkedin: 'https://linkedin.com/in/dhoang03',
-  cv: 'https://drive.google.com/file/d/1SEFuPOeQgVb1SMYGCg2yvDTpHmBJerfb/view?usp=drive_link',
+  cv: 'https://drive.google.com/file/d/15iQbHYbc5J92RFRN69MLSXYHR8ccMlQP/view?usp=sharing',
   // Replace with your Cloudinary avatar URL after uploading
   avatar: 'https://res.cloudinary.com/demo/image/upload/v1/samples/people/smiling-man.jpg',
   location: 'Ho Chi Minh City, Vietnam',
@@ -29,34 +29,28 @@ export const navLinks = [
 
 export interface SkillCategory {
   title: string
-  icon: string
   skills: string[]
 }
 
 export const skillCategories: SkillCategory[] = [
   {
     title: 'Languages',
-    icon: '💻',
     skills: ['Java', 'TypeScript', 'JavaScript', 'SQL'],
   },
   {
     title: 'Frameworks',
-    icon: '⚙️',
     skills: ['Spring Boot', 'Spring MVC', 'Spring Security', 'Data JPA', 'ReactJS', 'Angular', 'Tailwind CSS'],
   },
   {
     title: 'Technologies',
-    icon: '🔧',
     skills: ['RESTful APIs', 'JWT', 'OAuth2', 'WebSocket', 'Redis', 'SSE', 'RabbitMQ', 'SMTP'],
   },
   {
     title: 'Databases',
-    icon: '🗄️',
     skills: ['MySQL', 'SQL Server', 'PostgreSQL'],
   },
   {
     title: 'Tools & Platforms',
-    icon: '🚀',
     skills: ['Docker', 'Docker Compose', 'Git', 'GitHub', 'Postman', 'Cloudinary', 'Swagger/OpenAPI'],
   },
 ]
@@ -133,16 +127,16 @@ export const projects: Project[] = [
   },
   {
     title: 'Springtunes',
-    subtitle: 'Full-Stack Music Streaming Platform',
+    subtitle: 'Full-Stack Event-Driven Music Streaming Platform',
     period: 'Oct 2025 – Mar 2026',
     type: 'Full-stack',
-    description: 'Architected an end-to-end music streaming platform from scratch: React 19/TypeScript frontend, event-driven Spring Boot backend with RabbitMQ for async task queue processing and SSE for real-time updates, and HTTP Range Requests powering gapless playback across 3 player modes.',
+    description: 'Architected a production-grade, event-driven music streaming platform powered by Java 21 & Spring Boot 3.4. Features robust HttpOnly cookie authentication, IP-based Bucket4j rate limiting, asynchronous RabbitMQ message queues for play-count aggregation, targeted Redis caching, and real-time Server-Sent Events (SSE).',
     highlights: [
-      'Production-Grade Security: Secured all APIs with JWT/OAuth2 and reCAPTCHA v3, integrated PayOS for real premium payments end-to-end.',
-      'Custom Redis Cache Manager to cut database load and reduce API latency.',
-      'Containerization & API Docs: Docker & Docker Compose for one-command setup, documented REST endpoints with Swagger/OpenAPI (springdoc).',
+      'HttpOnly Cookie Security & Protection: Neutralized XSS risks by storing JWTs in HttpOnly/SameSite cookies with transparent CookieTokenFilter pipeline, coupled with Google OAuth2, reCAPTCHA v3, and Bucket4j IP rate limiting (10 req/min).',
+      'Event-Driven Messaging & Real-Time Push: Decoupled high-volume play-count updates via RabbitMQ queues to prevent database locks under concurrent streams; pushed instant alerts via Server-Sent Events (SSE).',
+      'Advanced Caching & Integration: Implemented Redis polymorphic deserialization (Jackson) with TTL-backed cache eviction, PayOS subscription gateway with daily schedulers, and Brevo REST API for transactional emails.',
     ],
-    tech: ['Java', 'Spring Boot', 'RabbitMQ', 'Redis', 'MySQL', 'React', 'TypeScript', 'JWT', 'PayOS', 'SSE', 'Docker'],
+    tech: ['Java 21', 'Spring Boot 3.4', 'RabbitMQ', 'Redis', 'Bucket4j', 'MySQL', 'React', 'TypeScript', 'HttpOnly Cookies', 'PayOS', 'SSE', 'Docker'],
     github: 'https://github.com/hdhoang03',
     liveDemo: 'https://spotify-clone-fe-chi.vercel.app/',
     // Replace with your Cloudinary image URL

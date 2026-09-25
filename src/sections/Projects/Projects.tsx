@@ -1,10 +1,185 @@
-import { motion } from 'framer-motion'
-import { ExternalLink } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ExternalLink, GitBranch, Terminal, X, ZoomIn } from 'lucide-react'
 import { SectionWrapper } from '../../components/common/SectionWrapper'
 import { SectionTitle } from '../../components/common/SectionTitle'
-import { projects } from '../../data/portfolioData'
+import { projects, type Project } from '../../data/portfolioData'
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+function Lightbox({
+  project,
+  onClose,
+}: {
+  project: Project
+  onClose: () => void
+}) {
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        key="lightbox-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8"
+        style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+        onClick={onClose}
+      >
+        {/* Modal content — stop propagation so clicks inside don't close */}
+        <motion.div
+          key="lightbox-content"
+          initial={{ opacity: 0, scale: 0.92, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.92, y: 16 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+          className="relative w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col"
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+            maxHeight: '90vh',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div
+            className="flex items-center justify-between px-5 py-3 border-b"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            <div>
+              <p className="font-bold text-sm font-['Outfit']" style={{ color: 'var(--color-text)' }}>
+                {project.title}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                {project.subtitle}
+              </p>
+            </div>
+            <button
+              id="lightbox-close"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+              style={{ background: 'var(--color-surface-2)', color: 'var(--color-muted)' }}
+              aria-label="Close"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          {/* Image */}
+          <div className="overflow-auto flex-1 flex items-center justify-center p-2 sm:p-4" style={{ background: '#0d0b14' }}>
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full rounded-xl object-contain"
+              style={{ maxHeight: 'calc(90vh - 120px)' }}
+              draggable={false}
+            />
+          </div>
+
+          {/* Footer bar */}
+          <div
+            className="flex items-center justify-between px-5 py-3 border-t gap-4"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            <div className="flex flex-wrap gap-1.5">
+              {project.tech.slice(0, 5).map((t) => (
+                <span
+                  key={t}
+                  className="px-2 py-0.5 rounded text-xs font-medium"
+                  style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent)' }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold flex-shrink-0 transition-opacity hover:opacity-75"
+                style={{ color: 'var(--color-accent)' }}
+              >
+                <GitBranch size={12} /> View Source
+              </a>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+// ─── Terminal mockup (backend-only projects) ──────────────────────────────────
+
+function TerminalMockup({ title, tech }: { title: string; tech: string[] }) {
+  const lines = [
+    { delay: 0, text: '$ ./start.sh', color: 'var(--color-accent)' },
+    { delay: 0.3, text: `> Booting ${title}...`, color: 'var(--color-text-2)' },
+    { delay: 0.6, text: `> Stack: ${tech.slice(0, 3).join(' · ')}`, color: 'var(--color-text-2)' },
+    { delay: 0.9, text: '> Server listening on :8080', color: '#22c55e' },
+    { delay: 1.2, text: '> All systems operational ✓', color: '#22c55e' },
+  ]
+
+  return (
+    <div
+      className="w-full h-56 sm:h-64 rounded-2xl overflow-hidden flex flex-col"
+      style={{ background: '#0d0b14', border: '1px solid var(--color-border)' }}
+    >
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#2a2545' }}>
+        <span className="w-3 h-3 rounded-full bg-red-500 opacity-80" />
+        <span className="w-3 h-3 rounded-full bg-yellow-400 opacity-80" />
+        <span className="w-3 h-3 rounded-full bg-green-500 opacity-80" />
+        <span className="ml-3 text-xs font-mono" style={{ color: '#6e6a8a' }}>
+          {title.toLowerCase().replace(/\s+/g, '-')} — bash
+        </span>
+      </div>
+      <div className="flex-1 px-4 py-4 font-mono text-xs flex flex-col gap-2">
+        {lines.map((line, i) => (
+          <motion.p
+            key={i}
+            initial={{ opacity: 0, x: -8 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: line.delay, duration: 0.3 }}
+            style={{ color: line.color }}
+          >
+            {line.text}
+          </motion.p>
+        ))}
+        <motion.span
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ repeat: Infinity, duration: 1 }}
+          style={{ color: 'var(--color-accent)' }}
+        >
+          █
+        </motion.span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main component ────────────────────────────────────────────────────────────
 
 export function Projects() {
+  const [lightboxProject, setLightboxProject] = useState<Project | null>(null)
+  const openLightbox = useCallback((p: Project) => setLightboxProject(p), [])
+  const closeLightbox = useCallback(() => setLightboxProject(null), [])
+
   const featured = projects.filter((p) => p.featured)
   const others = projects.filter((p) => !p.featured)
 
@@ -17,33 +192,62 @@ export function Projects() {
       />
 
       {/* Featured projects */}
-      <div className="flex flex-col gap-10 mb-16">
+      <div className="flex flex-col gap-14 mb-16">
         {featured.map((project, index) => (
           <motion.article
             key={project.title}
             id={`project-${project.title.toLowerCase().replace(/\s+/g, '-')}`}
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.55, delay: index * 0.1 }}
-            className={`grid lg:grid-cols-2 gap-8 items-center`}
+            transition={{ duration: 0.55, delay: index * 0.08 }}
+            className="grid lg:grid-cols-2 gap-10 items-center"
           >
-            {/* Image or placeholder */}
-            <div
-              className={`relative rounded-2xl overflow-hidden ${index % 2 === 1 ? 'lg:order-last' : ''}`}
-              style={{ minHeight: 224 }}
-            >
+            {/* Image / terminal */}
+            <div className={`${index % 2 === 1 ? 'lg:order-last' : ''}`}>
               {project.image ? (
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-56 sm:h-64 object-cover"
-                />
-              ) : (
                 <div
-                  className="w-full h-56 sm:h-64"
-                  style={{ background: 'linear-gradient(135deg, #f3f0ff 0%, #e9e3ff 50%, #f0ebff 100%)' }}
-                />
+                  className="relative rounded-2xl overflow-hidden group cursor-pointer"
+                  onClick={() => openLightbox(project)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && openLightbox(project)}
+                  aria-label={`View ${project.title} screenshot`}
+                >
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-56 sm:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Hover overlay */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4"
+                    style={{ background: 'rgba(13,11,20,0.6)', backdropFilter: 'blur(2px)' }}
+                  >
+                    {/* Always show zoom-in for image */}
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white"
+                      style={{ background: 'rgba(91,79,207,0.9)', backdropFilter: 'blur(4px)' }}
+                      onClick={(e) => { e.stopPropagation(); openLightbox(project) }}
+                    >
+                      <ZoomIn size={14} /> View Screenshot
+                    </button>
+                    {project.liveDemo && project.liveDemo !== '#' && (
+                      <a
+                        href={project.liveDemo}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+                        style={{ background: 'var(--color-surface)', color: 'var(--color-accent)', border: '1px solid var(--color-accent)' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink size={14} /> Live
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <TerminalMockup title={project.title} tech={project.tech} />
               )}
             </div>
 
@@ -57,7 +261,7 @@ export function Projects() {
               <h3 className="text-2xl font-bold font-['Outfit'] mb-1" style={{ color: 'var(--color-text)' }}>
                 {project.title}
               </h3>
-              <p className="text-sm font-medium mb-4" style={{ color: 'var(--color-accent)' }}>
+              <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-accent)' }}>
                 {project.subtitle}
               </p>
 
@@ -65,11 +269,11 @@ export function Projects() {
                 {project.description}
               </p>
 
-              <ul className="flex flex-col gap-1.5 mb-5">
+              <ul className="flex flex-col gap-2 mb-5">
                 {project.highlights.map((h, i) => (
                   <li key={i} className="text-sm flex gap-2.5 leading-relaxed" style={{ color: 'var(--color-text-2)' }}>
-                    <span className="mt-2 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--color-accent)' }} />
-                    {h}
+                    <span className="mt-[0.45rem] w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-accent)' }} />
+                    <span>{h}</span>
                   </li>
                 ))}
               </ul>
@@ -88,31 +292,41 @@ export function Projects() {
               </div>
 
               {/* Links */}
-              <div className="flex gap-4 text-sm font-semibold">
+              <div className="flex flex-wrap gap-4 text-sm font-semibold">
                 {project.github && (
                   <a
                     href={project.github}
                     id={`project-${project.title.toLowerCase().replace(/\s+/g, '-')}-github`}
                     target="_blank"
                     rel="noreferrer"
-                    className="transition-colors hover:text-violet-600"
+                    className="inline-flex items-center gap-1.5 transition-opacity hover:opacity-75"
                     style={{ color: 'var(--color-accent)' }}
                   >
-                    View Source →
+                    <GitBranch size={14} /> View Source
                   </a>
                 )}
-                {project.liveDemo && project.liveDemo !== '#' && (
+                {project.liveDemo && project.liveDemo !== '#' ? (
                   <a
                     href={project.liveDemo}
                     id={`project-${project.title.toLowerCase().replace(/\s+/g, '-')}-demo`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 transition-colors hover:text-violet-600"
+                    className="inline-flex items-center gap-1.5 transition-opacity hover:opacity-75"
                     style={{ color: 'var(--color-muted)' }}
                   >
                     Live Demo <ExternalLink size={12} />
                   </a>
-                )}
+                ) : project.image ? (
+                  // Has image but no live demo → show "View Screenshot" text link
+                  <button
+                    id={`project-${project.title.toLowerCase().replace(/\s+/g, '-')}-screenshot`}
+                    onClick={() => openLightbox(project)}
+                    className="inline-flex items-center gap-1.5 transition-opacity hover:opacity-75"
+                    style={{ color: 'var(--color-muted)' }}
+                  >
+                    <ZoomIn size={13} /> View Screenshot
+                  </button>
+                ) : null}
               </div>
             </div>
           </motion.article>
@@ -122,9 +336,13 @@ export function Projects() {
       {/* Other projects */}
       {others.length > 0 && (
         <>
-          <h3 className="text-base font-semibold mb-6" style={{ color: 'var(--color-muted)' }}>
-            More projects
-          </h3>
+          <div className="flex items-center gap-4 mb-6">
+            <Terminal size={16} style={{ color: 'var(--color-muted)' }} />
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-muted)' }}>
+              More projects
+            </h3>
+            <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {others.map((project, index) => (
               <motion.div
@@ -133,37 +351,66 @@ export function Projects() {
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="card p-6 flex flex-col"
+                transition={{ delay: index * 0.08 }}
+                className="card p-6 flex flex-col group"
               >
                 <div className="flex justify-between items-start mb-4">
                   <span className="tag">{project.type}</span>
-                  <span className="text-xs" style={{ color: 'var(--color-muted)' }}>{project.period.split('–')[0].trim()}</span>
+                  <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                    {project.period.split('–')[0].trim()}
+                  </span>
                 </div>
                 <h4 className="text-lg font-bold font-['Outfit'] mb-1" style={{ color: 'var(--color-text)' }}>
                   {project.title}
                 </h4>
+                <p className="text-xs font-medium mb-3" style={{ color: 'var(--color-accent)' }}>
+                  {project.subtitle}
+                </p>
                 <p className="text-sm mb-4 flex-1 leading-relaxed" style={{ color: 'var(--color-text-2)' }}>
                   {project.highlights[0]}
                 </p>
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {project.tech.slice(0, 4).map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded text-xs" style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-2)' }}>
+                    <span
+                      key={t}
+                      className="px-2 py-0.5 rounded text-xs"
+                      style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)' }}
+                    >
                       {t}
                     </span>
                   ))}
                 </div>
-                {project.github && (
-                  <a href={project.github} target="_blank" rel="noreferrer"
-                    className="text-xs font-semibold transition-colors hover:text-violet-600"
-                    style={{ color: 'var(--color-accent)' }}>
-                    View Source →
-                  </a>
-                )}
+                <div className="flex items-center gap-4">
+                  {project.github && (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-75"
+                      style={{ color: 'var(--color-accent)' }}
+                    >
+                      <GitBranch size={12} /> View Source
+                    </a>
+                  )}
+                  {project.image && !project.liveDemo && (
+                    <button
+                      onClick={() => openLightbox(project)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-75"
+                      style={{ color: 'var(--color-muted)' }}
+                    >
+                      <ZoomIn size={12} /> Screenshot
+                    </button>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
         </>
+      )}
+
+      {/* Lightbox portal */}
+      {lightboxProject && (
+        <Lightbox project={lightboxProject} onClose={closeLightbox} />
       )}
     </SectionWrapper>
   )
