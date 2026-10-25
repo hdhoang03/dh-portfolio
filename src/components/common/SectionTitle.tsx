@@ -11,7 +11,7 @@ export function SectionTitle({ label, title, subtitle, align = 'left' }: Section
     <div className={`mb-12 ${isCenter ? 'text-center' : ''}`}>
       <span className="tag mb-3 inline-block">{label}</span>
       <h2
-        className="text-3xl sm:text-4xl font-bold font-['Outfit'] mb-2 leading-tight"
+        className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight mb-2"
         style={{ color: 'var(--color-text)' }}
       >
         {title}

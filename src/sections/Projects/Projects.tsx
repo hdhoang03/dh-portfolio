@@ -61,7 +61,7 @@ function Lightbox({
             style={{ borderColor: 'var(--color-border)' }}
           >
             <div>
-              <p className="font-bold text-sm font-['Outfit']" style={{ color: 'var(--color-text)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
                 {project.title}
               </p>
               <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
@@ -258,7 +258,7 @@ export function Projects() {
                 <span className="text-xs" style={{ color: 'var(--color-muted)' }}>{project.period}</span>
               </div>
 
-              <h3 className="text-2xl font-bold font-['Outfit'] mb-1" style={{ color: 'var(--color-text)' }}>
+              <h3 className="text-2xl font-bold tracking-tight mb-1" style={{ color: 'var(--color-text)' }}>
                 {project.title}
               </h3>
               <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-accent)' }}>
@@ -360,7 +360,7 @@ export function Projects() {
                     {project.period.split('–')[0].trim()}
                   </span>
                 </div>
-                <h4 className="text-lg font-bold font-['Outfit'] mb-1" style={{ color: 'var(--color-text)' }}>
+                <h4 className="text-lg font-bold tracking-tight mb-1" style={{ color: 'var(--color-text)' }}>
                   {project.title}
                 </h4>
                 <p className="text-xs font-medium mb-3" style={{ color: 'var(--color-accent)' }}>

@@ -25,7 +25,7 @@ export function Footer() {
 				<p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-accent)' }}>
 					Open to opportunities
 				</p>
-				<h2 className="text-2xl sm:text-3xl font-bold font-['Outfit'] mb-2" style={{ color: 'var(--color-text)' }}>
+				<h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--color-text)' }}>
 					Let's build something{' '}
 					<span className="gradient-text">together.</span>
 				</h2>

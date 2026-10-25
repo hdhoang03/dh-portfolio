@@ -53,7 +53,7 @@ export function Experience() {
               <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                 <div>
                   <h3
-                    className="text-lg font-bold font-['Outfit'] mb-0.5"
+                    className="text-lg font-bold tracking-tight mb-0.5"
                     style={{ color: 'var(--color-text)' }}
                   >
                     {exp.role}

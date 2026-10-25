@@ -6,11 +6,14 @@ import { Skills } from './sections/Skills/Skills'
 import { Experience } from './sections/Experience/Experience'
 import { Projects } from './sections/Projects/Projects'
 import { Education } from './sections/Education/Education'
+import { Contact } from './sections/Contact/Contact'
 import { MarqueeBanner } from './components/common/MarqueeBanner'
+import { ScrollProgressBar } from './components/common/ScrollProgressBar'
 
 function App() {
 	return (
-		<div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+		<div className="min-h-screen">
+			<ScrollProgressBar />
 			<Header />
 			<main>
 				<Hero />
@@ -24,6 +27,7 @@ function App() {
 				<Projects />
 				<MarqueeBanner text="Education & Certifications" />
 				<Education />
+				<Contact />
 			</main>
 			<Footer />
 		</div>

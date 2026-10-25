@@ -1,32 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --color-bg: #f7f5f2;
+    --color-bg: #faf9fd;
+    --color-bg-mesh-1: rgba(139, 127, 255, 0.08);
+    --color-bg-mesh-2: rgba(217, 70, 239, 0.05);
+    --color-bg-mesh-3: rgba(99, 102, 241, 0.05);
     --color-surface: #ffffff;
-    --color-surface-2: #f1ede8;
-    --color-accent: #5b4fcf;
+    --color-surface-soft: rgba(255, 255, 255, 0.78);
+    --color-surface-2: #f4f2fa;
+    --color-accent: #5546d6;
     --color-accent-2: #7c3aed;
-    --color-accent-light: #ede9fe;
-    --color-text: #1a1523;
-    --color-text-2: #4a4458;
-    --color-muted: #8b849c;
-    --color-border: #e4dff8;
+    --color-accent-light: #eeebff;
+    --color-text: #171424;
+    --color-text-2: #4e4963;
+    --color-muted: #858099;
+    --color-border: #e8e4f5;
+    --color-border-subtle: rgba(85, 70, 214, 0.08);
     --color-success: #16a34a;
   }
 
   [data-theme="dark"] {
-    --color-bg: #0d0b14;
-    --color-surface: #13111f;
-    --color-surface-2: #1a1729;
+    --color-bg: #0b0914;
+    --color-bg-mesh-1: rgba(139, 127, 255, 0.12);
+    --color-bg-mesh-2: rgba(192, 132, 252, 0.08);
+    --color-bg-mesh-3: rgba(79, 70, 229, 0.09);
+    --color-surface: #120f22;
+    --color-surface-soft: rgba(18, 15, 34, 0.75);
+    --color-surface-2: #19162e;
     --color-accent: #8b7fff;
     --color-accent-2: #a78bfa;
-    --color-accent-light: #1e1a35;
-    --color-text: #f0eeff;
-    --color-text-2: #b3aed4;
-    --color-muted: #6e6a8a;
-    --color-border: #2a2545;
+    --color-accent-light: #1e1938;
+    --color-text: #f2f0ff;
+    --color-text-2: #b5b0d8;
+    --color-muted: #6f6a8e;
+    --color-border: #262142;
+    --color-border-subtle: rgba(139, 127, 255, 0.12);
     --color-success: #22c55e;
   }
 
@@ -42,11 +52,25 @@
 
   body {
     background-color: var(--color-bg);
+    background-image: 
+      radial-gradient(at 0% 0%, var(--color-bg-mesh-1) 0px, transparent 50%),
+      radial-gradient(at 100% 25%, var(--color-bg-mesh-2) 0px, transparent 45%),
+      radial-gradient(at 45% 65%, var(--color-bg-mesh-3) 0px, transparent 55%),
+      radial-gradient(at 10% 90%, var(--color-bg-mesh-1) 0px, transparent 50%);
+    background-attachment: fixed;
+    background-size: 100% 100%;
     color: var(--color-text);
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     line-height: 1.7;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.025em;
   }
 
   ::-webkit-scrollbar {
@@ -87,11 +111,13 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 1.25rem;
+    box-shadow: 0 4px 20px -2px rgba(91, 79, 207, 0.04);
+    backdrop-filter: blur(12px);
     transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
   }
 
   [data-theme="dark"] .card {
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
   }
 
   .tag {

@@ -1,7 +1,32 @@
-import { motion, type Variants } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, type Variants, useInView, useMotionValue, useSpring } from 'framer-motion'
+import { TypeAnimation } from 'react-type-animation'
 import { personalInfo } from '../../data/portfolioData'
 import { TechStackFolder } from '../../components/common/TechStackFolder'
 import { InteractiveDotGrid } from '../../components/common/InteractiveDotGrid'
+
+// ─── Animated Counter ─────────────────────────────────────────────────────────
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const inView = useInView(ref, { once: true })
+  const motionVal = useMotionValue(0)
+  const spring = useSpring(motionVal, { stiffness: 80, damping: 20 })
+  const [display, setDisplay] = useState('0')
+
+  useEffect(() => {
+    if (inView) motionVal.set(target)
+  }, [inView, motionVal, target])
+
+  useEffect(() => {
+    return spring.on('change', (v) => setDisplay(Math.round(v).toString()))
+  }, [spring])
+
+  return (
+    <p ref={ref} className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+      {display}{suffix}
+    </p>
+  )
+}
 
 const containerVariants: Variants = {
 	hidden: {},
@@ -21,7 +46,6 @@ export function Hero() {
 		<section
 			id="hero"
 			className="relative min-h-screen flex items-center overflow-hidden"
-			style={{ background: 'var(--color-bg)' }}
 		>
 			{/* Interactive dot grid */}
 			<InteractiveDotGrid />
@@ -57,21 +81,26 @@ export function Hero() {
 						{/* Name */}
 						<motion.h1
 							variants={itemVariants}
-							className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-['Outfit'] leading-[1.1] mb-4"
+							className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] mb-4 tracking-tight"
 							style={{ color: 'var(--color-text)' }}
 						>
 							Ho Dang<br />
 							<span className="gradient-text">Hoang</span>
 						</motion.h1>
 
-						{/* Role */}
-						<motion.p
-							variants={itemVariants}
-							className="text-base sm:text-lg font-semibold mb-3"
-							style={{ color: 'var(--color-accent)' }}
-						>
-							{personalInfo.title}
-						</motion.p>
+						{/* Role — typewriter */}
+						<motion.div variants={itemVariants} className="text-base sm:text-lg font-semibold mb-3" style={{ color: 'var(--color-accent)', minHeight: '1.75rem' }}>
+							<TypeAnimation
+								sequence={[
+									'Full-Stack Developer', 2200,
+									'Backend Engineer', 2000,
+									'Java · Spring Boot', 2000,
+									'System Designer', 2000,
+								]}
+								repeat={Infinity}
+								cursor
+							/>
+						</motion.div>
 
 						{/* Description */}
 						<motion.p
@@ -127,17 +156,15 @@ export function Hero() {
 							))}
 						</motion.div>
 
-						{/* Stats */}
+						{/* Stats — animated counters */}
 						<motion.div variants={itemVariants} className="flex gap-8">
 							{[
-								{ value: '3+', label: 'Projects shipped' },
-								{ value: '2+', label: 'Companies' },
-								{ value: '790', label: 'TOEIC score' },
+								{ target: 3, suffix: '+', label: 'Projects shipped' },
+								{ target: 2, suffix: '+', label: 'Companies' },
+								{ target: 790, suffix: '', label: 'TOEIC score' },
 							].map((stat) => (
 								<div key={stat.label}>
-									<p className="text-xl sm:text-2xl font-bold font-['Outfit']" style={{ color: 'var(--color-text)' }}>
-										{stat.value}
-									</p>
+									<AnimatedCounter target={stat.target} suffix={stat.suffix} />
 									<p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
 										{stat.label}
 									</p>

@@ -25,8 +25,8 @@ export function SectionWrapper({ id, children, className = '', alt = false }: Se
       variants={variants}
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}
-      className={`section-padding ${className}`}
-      style={alt ? { background: 'var(--color-surface)' } : {}}
+      className={`section-padding transition-colors duration-300 ${className}`}
+      style={alt ? { background: 'var(--color-surface-soft)', backdropFilter: 'blur(8px)' } : {}}
     >
       <div className="max-w-5xl mx-auto">
         {children}

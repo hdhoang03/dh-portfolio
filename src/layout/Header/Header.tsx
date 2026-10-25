@@ -43,7 +43,7 @@ export function Header() {
         {/* Logo */}
         <a
           href="#"
-          className="text-base font-bold font-['Outfit'] tracking-tight select-none"
+          className="text-base font-extrabold tracking-tight select-none"
           style={{ color: 'var(--color-accent)' }}
         >
           {personalInfo.name.split(' ').pop()}

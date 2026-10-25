@@ -29,7 +29,7 @@ export function Education() {
                 transition={{ delay: index * 0.1 }}
                 className="card p-6"
               >
-                <h4 className="text-base font-bold font-['Outfit'] mb-1" style={{ color: 'var(--color-text)' }}>
+                <h4 className="text-base font-bold tracking-tight mb-1" style={{ color: 'var(--color-text)' }}>
                   {edu.institution}
                 </h4>
                 <p className="text-sm mb-3" style={{ color: 'var(--color-accent)' }}>
@@ -62,14 +62,14 @@ export function Education() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="text-base font-bold font-['Outfit'] mb-0.5" style={{ color: 'var(--color-text)' }}>
+                    <h4 className="text-base font-bold tracking-tight mb-0.5" style={{ color: 'var(--color-text)' }}>
                       {cert.title}
                     </h4>
                     <p className="text-sm" style={{ color: 'var(--color-muted)' }}>{cert.issuer}</p>
                   </div>
                   {cert.score && (
                     <div className="text-right">
-                      <p className="text-2xl font-extrabold font-['Outfit'] gradient-text leading-none">{cert.score}</p>
+                      <p className="text-2xl font-extrabold tracking-tight gradient-text leading-none">{cert.score}</p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>Score</p>
                     </div>
                   )}

@@ -10,8 +10,8 @@ export function MarqueeBanner({ text, repeat = 8, reverse = false }: MarqueeBann
 
   return (
     <div
-      className="w-full overflow-hidden py-3 border-y select-none"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      className="w-full overflow-hidden py-3 border-y select-none transition-colors duration-300"
+      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-soft)', backdropFilter: 'blur(8px)' }}
       aria-hidden="true"
     >
       <div
